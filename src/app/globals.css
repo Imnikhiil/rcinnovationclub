@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+/* ───────── Design tokens (dark is default) ───────── */
+:root,
+[data-theme="dark"] {
+  --bg: #030712;
+  --bg-soft: #0a1020;
+  --surface: #0f172a;
+  --fg: #f8fafc;
+  --fg-muted: #cbd5e1;
+  --border: rgba(148, 163, 184, 0.22);
+  --glass: rgba(15, 23, 42, 0.72);
+  --accent: #22d3ee;
+  --accent-2: #a78bfa;
+  --accent-soft: rgba(34, 211, 238, 0.14);
+  --accent-glow: rgba(34, 211, 238, 0.45);
+  --on-accent: #031016;
+  --gradient-brand: linear-gradient(135deg, #22d3ee 0%, #38bdf8 40%, #a78bfa 100%);
+  --glow-1: rgba(34, 211, 238, 0.16);
+  --glow-2: rgba(167, 139, 250, 0.14);
+  --grid-line: rgba(148, 163, 184, 0.07);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-soft: #f1f5f9;
+  --surface: #ffffff;
+  --fg: #0f172a;
+  --fg-muted: #475569;
+  --border: rgba(15, 23, 42, 0.14);
+  --glass: rgba(255, 255, 255, 0.9);
+  --accent: #0e7490;
+  --accent-2: #6d28d9;
+  --accent-soft: rgba(14, 116, 144, 0.1);
+  --accent-glow: rgba(14, 116, 144, 0.3);
+  --on-accent: #ffffff;
+  --gradient-brand: linear-gradient(135deg, #0e7490 0%, #0284c7 45%, #6d28d9 100%);
+  --glow-1: rgba(14, 116, 144, 0.12);
+  --glow-2: rgba(109, 40, 217, 0.1);
+  --grid-line: rgba(15, 23, 42, 0.06);
+  color-scheme: light;
+}
+
+/* Tailwind utilities: bg-bg, bg-surface, text-fg, text-muted, border-line, text-accent ... */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-display: var(--font-outfit), var(--font-jakarta), system-ui, sans-serif;
+}
+
+/* ───────── Base ───────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-jakarta), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ───────── Reusable pieces ───────── */
+.container-x {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 640px) {
+  .container-x {
+    padding-inline: 1.5rem;
+  }
+}
+
+.section-y {
+  padding-block: 3.5rem;
+}
+@media (min-width: 640px) {
+  .section-y {
+    padding-block: 4rem;
+  }
+}
+@media (min-width: 1024px) {
+  .section-y {
+    padding-block: 5rem;
+  }
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.text-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease,
+    box-shadow 0.35s ease;
+}
+@media (min-width: 768px) {
+  .card {
+    backdrop-filter: blur(12px);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    box-shadow: 0 24px 50px -24px var(--accent-glow);
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 0.9rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn-primary {
+  background: var(--gradient-brand);
+  color: var(--on-accent);
+  box-shadow: 0 10px 28px -10px var(--accent-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -10px var(--accent-glow);
+}
+.btn-ghost {
+  color: var(--fg);
+  border: 1px solid var(--border);
+  background: transparent;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
