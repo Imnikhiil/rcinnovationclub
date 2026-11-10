@@ -5,6 +5,7 @@ import Providers from "@/components/ui/Providers";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MobileJoinBar from "@/components/layout/MobileJoinBar";
 import { getContent } from "@/lib/content";
 import { assetUrl } from "@/lib/utils";
 
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             instagram={c.social.instagram}
             whatsapp={c.social.whatsapp}
           />
+          <MobileJoinBar registration={c.registration} />
         </Providers>
       </body>
     </html>
