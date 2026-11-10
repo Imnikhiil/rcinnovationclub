@@ -5,10 +5,29 @@ import EventsPreview from "@/components/home/EventsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import JoinCta from "@/components/home/JoinCta";
 import { getContent } from "@/lib/content";
+import { eventStartMs, type NextEventData } from "@/lib/countdown";
+import { isUpcomingEvent } from "@/lib/utils";
 import type { EventItem, GalleryItem, StatItem } from "@/lib/types";
 
 export default async function HomePage() {
   const c = await getContent();
+
+  // Soonest event that really is in the future (an old event stuck on "upcoming" is ignored).
+  const nowMs = Date.now();
+  const nextEvent: NextEventData | null =
+    (c.events as EventItem[])
+      .filter((e) => e.eventDate && isUpcomingEvent(e, nowMs))
+      .map((e) => ({ e, start: eventStartMs(e) }))
+      .filter((x): x is { e: EventItem; start: number } => x.start !== null && x.start > nowMs)
+      .sort((a, b) => a.start - b.start)
+      .map(({ e }) => ({
+        title: e.title,
+        tag: e.tag,
+        eventDate: e.eventDate as string,
+        time: e.time,
+        registerUrl: e.registerUrl,
+        registerLabel: e.registerLabel,
+      }))[0] ?? null;
 
   return (
     <>
@@ -19,6 +38,7 @@ export default async function HomePage() {
         description={c.hero.description}
         primaryLabel={c.hero.btnPrimary}
         secondaryLabel={c.hero.btnSecondary}
+        nextEvent={nextEvent}
       />
       {c.statsSection.enabled ? (
         <Stats

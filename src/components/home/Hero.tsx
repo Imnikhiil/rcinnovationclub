@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import NextEventCountdown from "./NextEventCountdown";
+import type { NextEventData } from "@/lib/countdown";
 
 interface Props {
   badge: string;
@@ -12,6 +14,8 @@ interface Props {
   description: string;
   primaryLabel: string;
   secondaryLabel: string;
+  /** Soonest future event; the countdown card is hidden when this is null. */
+  nextEvent?: NextEventData | null;
 }
 
 const CHIPS = [
@@ -22,7 +26,7 @@ const CHIPS = [
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
-export default function Hero({ badge, title, highlight, description, primaryLabel, secondaryLabel }: Props) {
+export default function Hero({ badge, title, highlight, description, primaryLabel, secondaryLabel, nextEvent }: Props) {
   return (
     <section className="relative overflow-hidden">
       <div aria-hidden className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]" />
@@ -73,6 +77,8 @@ export default function Hero({ badge, title, highlight, description, primaryLabe
               {secondaryLabel}
             </Link>
           </motion.div>
+
+          {nextEvent ? <NextEventCountdown event={nextEvent} /> : null}
         </div>
 
         {/* Decorative orbit */}
