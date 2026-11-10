@@ -27,8 +27,43 @@ export function eventTime(e: { eventDate?: string; date?: string }): number {
   return 0;
 }
 
+/** Same rule as the old site: forceStatus wins, otherwise the date decides (today counts as upcoming). */
+export function isUpcomingEvent(e: { eventDate?: string; forceStatus?: string }, now = Date.now()): boolean {
+  if (e.forceStatus === "upcoming") return true;
+  if (e.forceStatus === "past") return false;
+  if (!e.eventDate) return false;
+  const day = new Date(now);
+  day.setHours(0, 0, 0, 0);
+  return Date.parse(e.eventDate + "T00:00:00") >= day.getTime();
+}
+
 export function initials(name?: string): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return "RC";
   return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
+export function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+export function isEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+export function uid(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+export function formatDate(d?: string): string {
+  if (!d) return "";
+  const t = new Date(d.includes("T") ? d : `${d}T00:00:00`);
+  if (Number.isNaN(t.getTime())) return d;
+  return t.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function splitList(v?: string | string[]): string[] {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.filter(Boolean);
+  return v.split(",").map((t) => t.trim()).filter(Boolean);
 }
