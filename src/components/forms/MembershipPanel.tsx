@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lock, Send, UserPlus, X } from "lucide-react";
 import { sbInsert } from "@/lib/supabase";
 import { fillTemplate, sendNotification } from "@/lib/notify";
@@ -29,6 +29,12 @@ export default function MembershipPanel({ registration, notify }: { registration
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
+  const panelRef = useRef<HTMLDivElement>(null);
+  const msgRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (error || done) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [error, done]);
 
   // Computed in the browser so the visitor's own date is used (and no server/client mismatch).
   useEffect(() => setStatus(computeStatus(registration)), [registration]);
@@ -109,14 +115,18 @@ export default function MembershipPanel({ registration, notify }: { registration
   return (
     <div className="mb-6">
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className="btn btn-primary">
+        <button
+          type="button"
+          onClick={() => { setOpen(true); setTimeout(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); }}
+          className="btn btn-primary w-full sm:w-auto"
+        >
           <UserPlus size={18} /> Join RC Innovation Club
         </button>
       ) : (
-        <div className="card mx-auto max-w-2xl p-6 text-left sm:p-8">
+        <div ref={panelRef} className="card mx-auto max-w-2xl scroll-mt-24 p-5 text-left sm:p-8">
           <div className="flex items-center justify-between">
             <h3 className="font-display text-xl font-bold">Membership Registration</h3>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close registration form" className="grid h-9 w-9 place-items-center rounded-full hover:bg-[var(--accent-soft)]">
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close registration form" className="grid h-11 w-11 place-items-center rounded-full hover:bg-[var(--accent-soft)]">
               <X size={18} />
             </button>
           </div>
@@ -137,9 +147,9 @@ export default function MembershipPanel({ registration, notify }: { registration
               <label htmlFor="mem-reason" className="label">Reason for Joining <span className="text-accent">*</span></label>
               <textarea id="mem-reason" name="reason" rows={3} required placeholder="Why do you want to join RC Innovation Club?" className="field resize-y" />
             </div>
-            {error ? <p role="alert" className="msg-error">{error}</p> : null}
-            {done ? <p role="status" className="msg-success">{done}</p> : null}
-            <button type="submit" disabled={busy} className="btn btn-primary disabled:opacity-60">
+            {error ? <p ref={msgRef} role="alert" className="msg-error">{error}</p> : null}
+            {done ? <p ref={msgRef} role="status" className="msg-success">{done}</p> : null}
+            <button type="submit" disabled={busy} className="btn btn-primary w-full disabled:opacity-60 sm:w-auto">
               <Send size={17} /> {busy ? "Submitting…" : "Submit Application"}
             </button>
           </form>

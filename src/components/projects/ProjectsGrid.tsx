@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Code, ExternalLink } from "lucide-react";
 import SmartImage from "@/components/ui/SmartImage";
-import { assetUrl, splitList } from "@/lib/utils";
+import { assetUrl, centerInRow, splitList } from "@/lib/utils";
 import type { ProjectItem } from "@/lib/types";
 
 const STATUSES: Record<string, string> = { completed: "Completed", "in-progress": "In Progress", planned: "Planned" };
@@ -21,9 +21,9 @@ export default function ProjectsGrid({ items }: { items: ProjectItem[] }) {
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter projects by status">
+      <div className="chip-row mb-6 sm:mb-8" role="tablist" aria-label="Filter projects by status">
         {[["all", "All"], ...Object.entries(STATUSES)].map(([id, label]) => (
-          <button key={id} type="button" role="tab" aria-selected={filter === id} data-active={filter === id} onClick={() => setFilter(id)} className="chip">
+          <button key={id} type="button" role="tab" aria-selected={filter === id} data-active={filter === id} onClick={(e) => { setFilter(id); centerInRow(e.currentTarget); }} className="chip">
             {label}
           </button>
         ))}
@@ -32,7 +32,7 @@ export default function ProjectsGrid({ items }: { items: ProjectItem[] }) {
       {list.length === 0 ? (
         <p className="text-center text-muted">No projects found for this filter.</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {list.map((p, i) => {
             const status = statusOf(p);
             const tags = splitList(p.tech);
@@ -59,10 +59,10 @@ export default function ProjectsGrid({ items }: { items: ProjectItem[] }) {
                   {(p.githubUrl || p.demoUrl) ? (
                     <div className="mt-auto flex gap-2 pt-4">
                       {p.githubUrl ? (
-                        <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost !px-4 !py-2 text-sm"><Code size={15} /> Code</a>
+                        <a href={p.githubUrl} target="_blank" rel="noopener noreferrer" className="btn btn-ghost flex-1 !px-4 !py-2.5 text-sm sm:flex-none"><Code size={15} /> Code</a>
                       ) : null}
                       {p.demoUrl ? (
-                        <a href={p.demoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary !px-4 !py-2 text-sm"><ExternalLink size={15} /> Demo</a>
+                        <a href={p.demoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary flex-1 !px-4 !py-2.5 text-sm sm:flex-none"><ExternalLink size={15} /> Demo</a>
                       ) : null}
                     </div>
                   ) : null}

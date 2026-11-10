@@ -19,9 +19,9 @@ export default async function JoinPage() {
       <section className="section-y">
         <div className="container-x">
           <Reveal>
-            <div className="card mx-auto max-w-3xl p-8 text-center sm:p-12">
+            <div className="card mx-auto max-w-3xl p-6 text-center sm:p-12">
               <span className="eyebrow">{j.eyebrow}</span>
-              <h1 className="mt-4 font-display text-3xl font-extrabold sm:text-4xl">{j.title}</h1>
+              <h1 className="mt-4 font-display text-[1.75rem] font-extrabold leading-tight sm:text-4xl">{j.title}</h1>
               <p className="mx-auto mb-7 mt-4 max-w-xl leading-relaxed text-muted">{j.description}</p>
 
               <MembershipPanel registration={c.registration} notify={getNotifyConfig(c)} />

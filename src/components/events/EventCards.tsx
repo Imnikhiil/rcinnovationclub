@@ -21,7 +21,7 @@ export function UpcomingCard({ e }: { e: EventItem }) {
           Upcoming
         </span>
       </div>
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
         {e.tag ? <span className="eyebrow self-start">{e.tag}</span> : null}
         <h3 className="mt-3 font-display text-xl font-bold">{e.title}</h3>
         <ul className="mt-3 space-y-1.5 text-sm text-muted">
@@ -33,7 +33,7 @@ export function UpcomingCard({ e }: { e: EventItem }) {
         {e.registerUrl ? (
           <Link
             href={siteHref(e.registerUrl)}
-            className="btn btn-primary mt-5 self-start"
+            className="btn btn-primary mt-5 w-full sm:w-auto sm:self-start"
             {...(e.registerUrl.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
             {e.registerLabel || "Register Now"}

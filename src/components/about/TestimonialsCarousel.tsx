@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
 import SmartImage from "@/components/ui/SmartImage";
 import { assetUrl } from "@/lib/utils";
@@ -21,6 +21,7 @@ export default function TestimonialsCarousel({ items }: { items: TestimonialItem
   const perView = usePerView();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
   const maxIndex = Math.max(0, items.length - perView);
   const safeIndex = Math.min(index, maxIndex);
 
@@ -41,7 +42,19 @@ export default function TestimonialsCarousel({ items }: { items: TestimonialItem
   if (!items.length) return null;
 
   return (
-    <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+    <div
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={(e) => { touchX.current = e.touches[0].clientX; setPaused(true); }}
+      onTouchEnd={(e) => {
+        if (touchX.current !== null) {
+          const dx = e.changedTouches[0].clientX - touchX.current;
+          if (Math.abs(dx) > 45) go(dx < 0 ? 1 : -1); // swipe left = next
+        }
+        touchX.current = null;
+        setPaused(false);
+      }}
+    >
       <div className="overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-out"
@@ -49,7 +62,7 @@ export default function TestimonialsCarousel({ items }: { items: TestimonialItem
         >
           {items.map((t, i) => (
             <div key={`${t.name}-${i}`} className="shrink-0 p-2" style={{ flexBasis: `${100 / perView}%` }}>
-              <figure className="card h-full p-6">
+              <figure className="card h-full p-5 sm:p-6">
                 <Quote size={26} className="text-accent" />
                 {t.rating ? (
                   <div className="mt-3 flex gap-0.5" aria-label={`${t.rating} out of 5`}>
@@ -75,14 +88,14 @@ export default function TestimonialsCarousel({ items }: { items: TestimonialItem
       </div>
       {maxIndex > 0 ? (
         <div className="mt-5 flex items-center justify-center gap-3">
-          <button type="button" onClick={() => go(-1)} aria-label="Previous testimonial" className="card grid h-10 w-10 place-items-center rounded-full"><ChevronLeft size={18} /></button>
+          <button type="button" onClick={() => go(-1)} aria-label="Previous testimonial" className="card grid h-11 w-11 place-items-center rounded-full"><ChevronLeft size={18} /></button>
           <div className="flex gap-1.5">
             {Array.from({ length: maxIndex + 1 }).map((_, i) => (
               <button key={i} type="button" onClick={() => setIndex(i)} aria-label={`Go to testimonial ${i + 1}`}
                 className={`h-2 rounded-full transition-all ${i === safeIndex ? "w-6 bg-[var(--accent)]" : "w-2 bg-[var(--border)]"}`} />
             ))}
           </div>
-          <button type="button" onClick={() => go(1)} aria-label="Next testimonial" className="card grid h-10 w-10 place-items-center rounded-full"><ChevronRight size={18} /></button>
+          <button type="button" onClick={() => go(1)} aria-label="Next testimonial" className="card grid h-11 w-11 place-items-center rounded-full"><ChevronRight size={18} /></button>
         </div>
       ) : null}
     </div>

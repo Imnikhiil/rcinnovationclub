@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Download, ExternalLink, FileText, Link2, Presentation, Play, Search } from "lucide-react";
-import { splitList } from "@/lib/utils";
+import { centerInRow, splitList } from "@/lib/utils";
 import type { ResourceItem } from "@/lib/types";
 
 const TYPE_ICON: Record<string, React.ComponentType<{ size?: number }>> = {
@@ -35,22 +35,22 @@ export default function ResourcesHub({ items }: { items: ResourceItem[] }) {
           <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search resources…" aria-label="Search resources" className="field !pl-11" />
         </div>
       </div>
-      <div className="mb-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Resource categories">
+      <div className="chip-row mb-6 sm:mb-8" role="tablist" aria-label="Resource categories">
         {categories.map((c) => (
-          <button key={c} type="button" role="tab" aria-selected={cat === c} data-active={cat === c} onClick={() => setCat(c)} className="chip">{c}</button>
+          <button key={c} type="button" role="tab" aria-selected={cat === c} data-active={cat === c} onClick={(e) => { setCat(c); centerInRow(e.currentTarget); }} className="chip">{c}</button>
         ))}
       </div>
 
       {list.length === 0 ? (
         <p className="text-center text-muted">No resources found.</p>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {list.map((r, i) => {
             const Icon = TYPE_ICON[r.type || "link"] || Link2;
             const tags = splitList(r.tags);
             const isDownload = r.type === "pdf" || r.type === "doc";
             return (
-              <article key={`${r.title}-${i}`} className="card card-hover flex h-full flex-col p-6">
+              <article key={`${r.title}-${i}`} className="card card-hover flex h-full flex-col p-5 sm:p-6">
                 <div className="flex items-center justify-between">
                   <span className="grid h-11 w-11 place-items-center rounded-xl bg-[var(--accent-soft)] text-accent"><Icon size={20} /></span>
                   {r.category ? <span className="eyebrow">{r.category}</span> : null}
@@ -64,7 +64,7 @@ export default function ResourcesHub({ items }: { items: ResourceItem[] }) {
                 ) : null}
                 {r.url ? (
                   <div className="mt-auto pt-5">
-                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost !py-2 text-sm">
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost w-full !py-2.5 text-sm sm:w-auto">
                       {isDownload ? <Download size={15} /> : <ExternalLink size={15} />} {isDownload ? "Download" : "Open"}
                     </a>
                   </div>

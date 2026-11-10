@@ -72,7 +72,7 @@ h1{font-size:40px;margin:10px 0}h2{font-size:34px;margin:30px 0;color:#0e7490}p{
   }
 
   return (
-    <div className="card mx-auto max-w-2xl p-7 sm:p-9">
+    <div className="card mx-auto max-w-2xl p-5 sm:p-9">
       <div className="text-center">
         {cfg.eyebrow ? <span className="eyebrow">{cfg.eyebrow}</span> : null}
         <h2 className="mt-3 font-display text-2xl font-bold">{cfg.title}</h2>
@@ -111,7 +111,7 @@ h1{font-size:40px;margin:10px 0}h2{font-size:34px;margin:30px 0;color:#0e7490}p{
               <div><dt className="inline font-bold">ID: </dt><dd className="inline">{result.cert.id}</dd></div>
             </dl>
             {result.kind === "valid" ? (
-              <button type="button" onClick={() => download(result.cert)} className="btn btn-ghost mt-4 !py-2 text-sm">
+              <button type="button" onClick={() => download(result.cert)} className="btn btn-ghost mt-4 w-full !py-2.5 text-sm sm:w-auto">
                 <Download size={15} /> Download Certificate
               </button>
             ) : null}

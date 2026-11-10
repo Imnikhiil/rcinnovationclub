@@ -42,7 +42,7 @@ export default async function AboutPage() {
         <div className="container-x grid gap-4 md:grid-cols-3">
           {cards.map((x, i) => (
             <Reveal key={x.heading} delay={i * 0.08}>
-              <article className="card card-hover h-full p-7">
+              <article className="card card-hover h-full p-6 sm:p-7">
                 <span className="grid h-12 w-12 place-items-center rounded-xl"
                   style={{ background: `color-mix(in srgb, ${x.color} 16%, transparent)`, color: x.color }}>
                   <x.icon size={22} />

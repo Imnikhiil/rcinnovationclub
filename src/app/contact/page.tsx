@@ -21,33 +21,37 @@ export default async function ContactPage() {
       <section className="section-y pt-6">
         <div className="container-x grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
           <Reveal>
-            <div className="card h-full p-7">
+            <div className="card h-full p-5 sm:p-7">
               <h2 className="font-display text-xl font-bold">Reach RC Innovation Club</h2>
               <p className="mt-2 text-sm text-muted">
                 We welcome questions from students, faculty, sponsors, and partner organizations.
               </p>
-              <ul className="mt-6 space-y-4 text-sm">
-                <li className="flex items-center gap-3">
-                  <Mail size={18} className="text-accent" />
-                  <a href={`mailto:${c.social.email}`} className="hover:text-accent">{c.social.email}</a>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Globe size={18} className="text-accent" />
-                  <a href={c.social.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-accent">Instagram</a>
-                </li>
-                <li className="flex items-center gap-3">
-                  <MessageCircle size={18} className="text-accent" />
-                  <a href={c.social.whatsapp} target="_blank" rel="noopener noreferrer" className="hover:text-accent">WhatsApp Channel</a>
-                </li>
-                <li className="flex items-center gap-3">
-                  <MapPin size={18} className="text-accent" />
+              <ul className="mt-5 space-y-3 text-sm">
+                {[
+                  { icon: Mail, label: c.social.email, href: `mailto:${c.social.email}` },
+                  { icon: Globe, label: "Instagram", href: c.social.instagram },
+                  { icon: MessageCircle, label: "WhatsApp Channel", href: c.social.whatsapp },
+                ].map((r) => (
+                  <li key={r.label}>
+                    <a
+                      href={r.href}
+                      {...(r.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      className="flex min-h-[3.25rem] items-center gap-3 rounded-xl border border-[var(--border)] px-4 py-3 font-medium transition-colors active:bg-[var(--accent-soft)] hover:border-[var(--accent)]"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--accent-soft)] text-accent"><r.icon size={18} /></span>
+                      <span className="break-all">{r.label}</span>
+                    </a>
+                  </li>
+                ))}
+                <li className="flex min-h-[3.25rem] items-center gap-3 rounded-xl border border-[var(--border)] px-4 py-3 font-medium">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--accent-soft)] text-accent"><MapPin size={18} /></span>
                   <span>DSEU Rajokri Campus, New Delhi</span>
                 </li>
               </ul>
             </div>
           </Reveal>
           <Reveal delay={0.08}>
-            <div className="card p-7">
+            <div className="card p-5 sm:p-7">
               <ContactForm labels={s} notify={getNotifyConfig(c)} />
             </div>
           </Reveal>

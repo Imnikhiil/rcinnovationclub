@@ -67,3 +67,8 @@ export function splitList(v?: string | string[]): string[] {
   if (Array.isArray(v)) return v.filter(Boolean);
   return v.split(",").map((t) => t.trim()).filter(Boolean);
 }
+
+/** Scrolls the tapped chip to the middle of its swipeable row (mobile). */
+export function centerInRow(el: HTMLElement | null) {
+  el?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}

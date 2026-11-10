@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { sbInsert } from "@/lib/supabase";
 import { fillTemplate, sendNotification } from "@/lib/notify";
@@ -22,6 +22,11 @@ export default function ContactForm({ labels, notify }: { labels: Labels; notify
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
+  const msgRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (error || done) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [error, done]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -90,8 +95,8 @@ export default function ContactForm({ labels, notify }: { labels: Labels; notify
         <label htmlFor="contact-message" className="label">{labels.messageLabel} <span className="text-accent">*</span></label>
         <textarea id="contact-message" name="message" rows={5} required placeholder="How can we help you?" className="field resize-y" />
       </div>
-      {error ? <p role="alert" className="msg-error">{error}</p> : null}
-      {done ? <p role="status" className="msg-success">{done}</p> : null}
+      {error ? <p ref={msgRef} role="alert" className="msg-error">{error}</p> : null}
+      {done ? <p ref={msgRef} role="status" className="msg-success">{done}</p> : null}
       <button type="submit" disabled={busy} className="btn btn-primary w-full disabled:opacity-60 sm:w-auto">
         <Send size={17} /> {busy ? "Sending…" : labels.submitLabel}
       </button>

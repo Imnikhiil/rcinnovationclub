@@ -213,7 +213,8 @@ body {
   background: color-mix(in srgb, var(--surface) 80%, transparent);
   padding: 0.75rem 1rem;
   color: var(--fg);
-  font-size: 0.95rem;
+  font-size: 1rem; /* 16px: stops iPhone Safari from zooming in on focus */
+  min-height: 3rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .field::placeholder {
@@ -267,4 +268,68 @@ body {
   background: rgba(52, 211, 153, 0.12);
   border: 1px solid rgba(52, 211, 153, 0.4);
   color: #34d399;
+}
+
+
+/* ───────── Mobile polish ───────── */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Filter chips: one swipeable row on phones, centered wrap on bigger screens */
+.chip {
+  min-height: 2.5rem;
+}
+.chip-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin-inline: -1.25rem;
+  padding: 0.25rem 1.25rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, transparent 0, #000 1rem, #000 calc(100% - 1rem), transparent 100%);
+}
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+.chip-row > .chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+  scroll-snap-align: center;
+}
+@media (min-width: 640px) {
+  .chip-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+    mask-image: none;
+  }
+}
+
+/* Touch feedback (phones have no hover) */
+@media (hover: none) {
+  .card-hover:active {
+    transform: scale(0.985);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Bottom sheets (team profile on mobile) */
+.sheet-handle {
+  width: 2.75rem;
+  height: 0.3rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  background: var(--border);
+  touch-action: none;
+  cursor: grab;
+}
+.pb-safe {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
 }
