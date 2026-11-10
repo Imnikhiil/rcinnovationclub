@@ -3,10 +3,10 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight, Hand } from "lucide-react";
 import { PastCard } from "./EventCards";
-import type { EventItem } from "@/lib/types";
+import type { EventWithSlug } from "@/lib/events";
 
 /** Swipeable row of past events with arrow buttons (same idea as the old events carousel). */
-export default function PastEventsScroller({ events }: { events: EventItem[] }) {
+export default function PastEventsScroller({ events }: { events: EventWithSlug[] }) {
   const ref = useRef<HTMLDivElement>(null);
 
   function scroll(dir: 1 | -1) {
@@ -28,7 +28,7 @@ export default function PastEventsScroller({ events }: { events: EventItem[] }) 
         </button>
         <div ref={ref} className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:thin]">
           {events.map((e, i) => (
-            <div key={`${e.title}-${i}`} className="w-[82%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
+            <div key={`${e.slug}-${i}`} className="w-[82%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
               <PastCard e={e} />
             </div>
           ))}

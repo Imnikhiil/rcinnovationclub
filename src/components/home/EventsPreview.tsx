@@ -4,6 +4,7 @@ import Reveal from "@/components/ui/Reveal";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SmartImage from "@/components/ui/SmartImage";
 import { assetUrl, eventTime, siteHref } from "@/lib/utils";
+import { withSlugs } from "@/lib/events";
 import type { EventItem } from "@/lib/types";
 
 interface Props {
@@ -23,8 +24,9 @@ function isUpcoming(e: EventItem, now: number) {
 
 export default function EventsPreview({ eyebrow, title, subtitle, upcomingTitle, pastTitle, events }: Props) {
   const now = Date.now();
-  const upcoming = events.filter((e) => isUpcoming(e, now)).sort((a, b) => eventTime(a) - eventTime(b)).slice(0, 2);
-  const past = events.filter((e) => !isUpcoming(e, now)).sort((a, b) => eventTime(b) - eventTime(a)).slice(0, 3);
+  const all = withSlugs(events);
+  const upcoming = all.filter((e) => isUpcoming(e, now)).sort((a, b) => eventTime(a) - eventTime(b)).slice(0, 2);
+  const past = all.filter((e) => !isUpcoming(e, now)).sort((a, b) => eventTime(b) - eventTime(a)).slice(0, 3);
 
   return (
     <section id="events" className="section-y">
@@ -36,8 +38,8 @@ export default function EventsPreview({ eyebrow, title, subtitle, upcomingTitle,
             <h3 className="mb-5 text-center font-display text-lg font-bold">{upcomingTitle || "Upcoming Events"}</h3>
             <div className="grid gap-5 md:grid-cols-2">
               {upcoming.map((e, i) => (
-                <Reveal key={e.title} delay={i * 0.08}>
-                  <article className="card card-hover flex h-full flex-col overflow-hidden">
+                <Reveal key={e.slug} delay={i * 0.08}>
+                  <article className="card card-hover relative flex h-full flex-col overflow-hidden">
                     <div className="relative aspect-[16/9] overflow-hidden">
                       <SmartImage src={assetUrl(e.image)} alt={e.title} className="object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
                       <span className="absolute left-3 top-3 rounded-full bg-emerald-400 px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-wider text-emerald-950">
@@ -46,7 +48,9 @@ export default function EventsPreview({ eyebrow, title, subtitle, upcomingTitle,
                     </div>
                     <div className="flex flex-1 flex-col p-6">
                       {e.tag ? <span className="eyebrow self-start">{e.tag}</span> : null}
-                      <h4 className="mt-3 font-display text-xl font-bold">{e.title}</h4>
+                      <h4 className="mt-3 font-display text-xl font-bold">
+                        <Link href={`/events/${e.slug}`} className="after:absolute after:inset-0 after:content-['']">{e.title}</Link>
+                      </h4>
                       <ul className="mt-3 space-y-1.5 text-sm text-muted">
                         {e.date ? (
                           <li className="flex items-center gap-2"><CalendarDays size={15} className="text-accent" /> {e.date}</li>
@@ -62,7 +66,7 @@ export default function EventsPreview({ eyebrow, title, subtitle, upcomingTitle,
                       {e.registerUrl ? (
                         <Link
                           href={siteHref(e.registerUrl)}
-                          className="btn btn-primary mt-5 self-start"
+                          className="btn btn-primary relative z-10 mt-5 self-start"
                           {...(e.registerUrl.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                         >
                           {e.registerLabel || "Register Now"}
@@ -81,14 +85,16 @@ export default function EventsPreview({ eyebrow, title, subtitle, upcomingTitle,
             <h3 className="mb-5 mt-14 text-center font-display text-lg font-bold">{pastTitle || "Past Events"}</h3>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {past.map((e, i) => (
-                <Reveal key={e.title} delay={i * 0.08}>
-                  <article className="card card-hover h-full overflow-hidden">
+                <Reveal key={e.slug} delay={i * 0.08}>
+                  <article className="card card-hover relative h-full overflow-hidden">
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <SmartImage src={assetUrl(e.image)} alt={e.title} className="object-cover" sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" />
                     </div>
                     <div className="p-5">
                       {e.tag ? <span className="eyebrow">{e.tag}</span> : null}
-                      <h4 className="mt-3 font-display text-lg font-bold">{e.title}</h4>
+                      <h4 className="mt-3 font-display text-lg font-bold">
+                        <Link href={`/events/${e.slug}`} className="after:absolute after:inset-0 after:content-['']">{e.title}</Link>
+                      </h4>
                       {e.date ? <p className="mt-1 text-xs text-muted">{e.date}</p> : null}
                       {e.description ? <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">{e.description}</p> : null}
                     </div>
