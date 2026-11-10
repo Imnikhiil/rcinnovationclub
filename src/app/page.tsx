@@ -4,10 +4,11 @@ import About from "@/components/home/About";
 import EventsPreview from "@/components/home/EventsPreview";
 import GalleryPreview from "@/components/home/GalleryPreview";
 import JoinCta from "@/components/home/JoinCta";
+import PartnersStrip from "@/components/home/PartnersStrip";
 import { getContent } from "@/lib/content";
 import { eventStartMs, type NextEventData } from "@/lib/countdown";
 import { isUpcomingEvent } from "@/lib/utils";
-import type { EventItem, GalleryItem, StatItem } from "@/lib/types";
+import type { EventItem, GalleryItem, PartnerItem, StatItem } from "@/lib/types";
 
 export default async function HomePage() {
   const c = await getContent();
@@ -69,6 +70,12 @@ export default async function HomePage() {
         title={c.gallerySection.title}
         subtitle={c.gallerySection.subtitle}
         items={c.gallery as GalleryItem[]}
+      />
+      <PartnersStrip
+        eyebrow={c.partnersSection.eyebrow}
+        title={c.partnersSection.title}
+        subtitle={c.partnersSection.subtitle}
+        partners={c.partners as unknown as PartnerItem[]}
       />
       <JoinCta
         eyebrow={c.join.eyebrow}
