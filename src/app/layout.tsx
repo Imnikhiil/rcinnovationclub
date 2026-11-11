@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileJoinBar from "@/components/layout/MobileJoinBar";
 import ScrollUi from "@/components/layout/ScrollUi";
+import SiteChrome from "@/components/layout/SiteChrome";
 import GoogleAnalytics, { validGaId } from "@/components/layout/GoogleAnalytics";
 import { getContent } from "@/lib/content";
 import { assetUrl } from "@/lib/utils";
@@ -55,28 +56,39 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
-          {bar.enabled ? (
-            <AnnouncementBar
-              id={bar.announcementId}
-              message={bar.message}
-              linkUrl={bar.linkUrl}
-              linkLabel={bar.linkLabel}
-              dismissible={bar.dismissible}
-            />
-          ) : null}
-          <Navbar brand={c.footer.brand} />
-          <main>{children}</main>
-          <Footer
-            brand={c.footer.brand}
-            description={c.footer.description}
-            email={c.footer.email}
-            copyright={c.footer.copyright}
-            instagram={c.social.instagram}
-            whatsapp={c.social.whatsapp}
-            share={c.seo.share}
-          />
-          <MobileJoinBar registration={c.registration} />
-          <ScrollUi />
+          <SiteChrome
+            top={
+              bar.enabled ? (
+                <AnnouncementBar
+                  id={bar.announcementId}
+                  message={bar.message}
+                  linkUrl={bar.linkUrl}
+                  linkLabel={bar.linkLabel}
+                  dismissible={bar.dismissible}
+                />
+              ) : null
+            }
+            header={<Navbar brand={c.footer.brand} />}
+            footer={
+              <Footer
+                brand={c.footer.brand}
+                description={c.footer.description}
+                email={c.footer.email}
+                copyright={c.footer.copyright}
+                instagram={c.social.instagram}
+                whatsapp={c.social.whatsapp}
+                share={c.seo.share}
+              />
+            }
+            extras={
+              <>
+                <MobileJoinBar registration={c.registration} />
+                <ScrollUi />
+              </>
+            }
+          >
+            {children}
+          </SiteChrome>
         </Providers>
         {/* Visitor + speed stats (Vercel dashboard). They render nothing visible and do nothing outside Vercel. */}
         <Analytics />
