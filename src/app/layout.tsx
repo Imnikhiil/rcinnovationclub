@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import Providers from "@/components/ui/Providers";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileJoinBar from "@/components/layout/MobileJoinBar";
+import GoogleAnalytics, { validGaId } from "@/components/layout/GoogleAnalytics";
 import { getContent } from "@/lib/content";
 import { assetUrl } from "@/lib/utils";
 
@@ -41,6 +44,7 @@ const themeScript = `try{var t=localStorage.getItem('rc-theme');document.documen
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const c = await getContent();
+  const gaId = validGaId(c.analyticsSection.ga4MeasurementId);
   const bar = c.announcementBar;
 
   return (
@@ -71,6 +75,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
           <MobileJoinBar registration={c.registration} />
         </Providers>
+        {/* Visitor + speed stats (Vercel dashboard). They render nothing visible and do nothing outside Vercel. */}
+        <Analytics />
+        <SpeedInsights />
+        {c.analyticsSection.enabled !== false && gaId ? <GoogleAnalytics id={gaId} /> : null}
       </body>
     </html>
   );
