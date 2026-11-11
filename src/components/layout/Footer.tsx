@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import ShareSite, { type ShareConfig } from "./ShareSite";
 
 interface Props {
   brand: string;
@@ -8,6 +9,7 @@ interface Props {
   copyright?: string;
   instagram?: string;
   whatsapp?: string;
+  share?: ShareConfig;
 }
 
 const LINKS = [
@@ -21,7 +23,7 @@ const LINKS = [
   { href: "/join", label: "Join" },
 ];
 
-export default function Footer({ brand, description, email, copyright, instagram, whatsapp }: Props) {
+export default function Footer({ brand, description, email, copyright, instagram, whatsapp, share }: Props) {
   return (
     <footer className="border-t border-line bg-bg-soft">
       <div className="container-x grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr]">
@@ -70,6 +72,11 @@ export default function Footer({ brand, description, email, copyright, instagram
           </ul>
         </div>
       </div>
+      {share && share.enabled !== false ? (
+        <div className="container-x pb-10">
+          <ShareSite share={share} />
+        </div>
+      ) : null}
       <div className="border-t border-line py-5 text-center text-xs text-muted">{copyright}</div>
     </footer>
   );

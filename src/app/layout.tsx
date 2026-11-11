@@ -8,6 +8,7 @@ import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MobileJoinBar from "@/components/layout/MobileJoinBar";
+import ScrollUi from "@/components/layout/ScrollUi";
 import GoogleAnalytics, { validGaId } from "@/components/layout/GoogleAnalytics";
 import { getContent } from "@/lib/content";
 import { assetUrl } from "@/lib/utils";
@@ -72,8 +73,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             copyright={c.footer.copyright}
             instagram={c.social.instagram}
             whatsapp={c.social.whatsapp}
+            share={c.seo.share}
           />
           <MobileJoinBar registration={c.registration} />
+          <ScrollUi />
         </Providers>
         {/* Visitor + speed stats (Vercel dashboard). They render nothing visible and do nothing outside Vercel. */}
         <Analytics />
