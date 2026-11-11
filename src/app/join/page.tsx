@@ -1,8 +1,10 @@
 import { Globe, MessageCircle } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 import MembershipPanel from "@/components/forms/MembershipPanel";
+import Faq from "@/components/sections/Faq";
 import Newsletter from "@/components/sections/Newsletter";
 import { getContent } from "@/lib/content";
+import { getFaq } from "@/lib/faq";
 import { getNotifyConfig } from "@/lib/notify-config";
 import { pageMetadata } from "@/lib/seo";
 
@@ -38,6 +40,7 @@ export default async function JoinPage() {
           </Reveal>
         </div>
       </section>
+      <Faq faq={getFaq(c)} />
       <Newsletter />
     </>
   );
