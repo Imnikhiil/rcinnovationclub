@@ -121,7 +121,10 @@ export default function Dashboard() {
       {canMembers ? (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card p-5">
-            <h2 className="font-display text-lg font-bold">Latest applications</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-bold">Latest applications</h2>
+              <Link href="/admin/applications" className="text-xs font-semibold text-accent underline">View all</Link>
+            </div>
             <ul className="mt-3 divide-y divide-[var(--border)]">
               {data && data.recentApps.length === 0 ? <li className="py-3 text-sm text-muted">No applications yet.</li> : null}
               {(data?.recentApps ?? []).map((a) => (
@@ -136,7 +139,10 @@ export default function Dashboard() {
             </ul>
           </div>
           <div className="card p-5">
-            <h2 className="font-display text-lg font-bold">Latest messages</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-display text-lg font-bold">Latest messages</h2>
+              <Link href="/admin/messages" className="text-xs font-semibold text-accent underline">View all</Link>
+            </div>
             <ul className="mt-3 divide-y divide-[var(--border)]">
               {data && data.recentMsgs.length === 0 ? <li className="py-3 text-sm text-muted">No messages yet.</li> : null}
               {(data?.recentMsgs ?? []).map((m) => (

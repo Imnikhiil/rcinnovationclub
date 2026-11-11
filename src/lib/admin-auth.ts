@@ -155,3 +155,41 @@ export async function listRows<T>(table: string, query: string): Promise<T[]> {
     return [];
   }
 }
+
+/** Like listRows, but throws on failure so a page can show a real error instead of an empty list. */
+export async function queryRows<T>(table: string, query: string): Promise<T[]> {
+  const res = await authedFetch(`${table}?${query}`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(body.message || `Could not load ${table} (${res.status}).`);
+  }
+  return (await res.json()) as T[];
+}
+
+export type UpdateResult = { ok: true } | { ok: false; message: string };
+
+/**
+ * Update one row by id as the signed-in admin.
+ * Supabase answers 200 with an EMPTY list when Row Level Security silently blocks an update,
+ * so we ask for the changed row back and treat "nothing changed" as a failure.
+ */
+export async function updateRow(table: string, id: string, patch: Record<string, unknown>): Promise<UpdateResult> {
+  try {
+    const res = await authedFetch(`${table}?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Prefer: "return=representation" },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      return { ok: false, message: body.message || `Update failed (${res.status}).` };
+    }
+    const rows = (await res.json().catch(() => [])) as unknown[];
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return { ok: false, message: "Supabase did not allow this change. Check the update policy for this table (or your role)." };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "Network error." };
+  }
+}
