@@ -7,12 +7,12 @@ function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** Objects merge deeply; arrays and values from the database win over defaults. */
-function merge<T>(base: T, over: unknown): T {
+export function mergeContent<T>(base: T, over: unknown): T {
   if (Array.isArray(base)) return (Array.isArray(over) ? over : base) as T;
   if (isObject(base) && isObject(over)) {
     const out: Record<string, unknown> = { ...base };
     for (const key of Object.keys(over)) {
-      out[key] = key in base ? merge((base as Record<string, unknown>)[key], over[key]) : over[key];
+      out[key] = key in base ? mergeContent((base as Record<string, unknown>)[key], over[key]) : over[key];
     }
     return out as T;
   }
@@ -39,7 +39,7 @@ export async function getContent(): Promise<Content> {
     });
     if (!res.ok) return defaults;
     const rows = (await res.json()) as { data?: unknown }[];
-    return merge(defaults, rows?.[0]?.data ?? {});
+    return mergeContent(defaults, rows?.[0]?.data ?? {});
   } catch {
     return defaults;
   }
