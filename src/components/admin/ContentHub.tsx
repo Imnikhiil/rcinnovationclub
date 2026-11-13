@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import CmsProvider, { useCms } from "./cms/CmsProvider";
 import { AnnouncementEditor, EventsEditor, FaqEditor, RegistrationEditor } from "./cms/ContentSections";
+import { AmbassadorsEditor, FacultyEditor, MembersEditor, PreviousMembersEditor, TeamEditor, TestimonialsEditor } from "./cms/PeopleSections";
+import { LegacyEditor, PartnersEditor, ProjectsEditor, ResourcesEditor } from "./cms/ShowcaseSections";
 import { centerInRow, formatDate } from "@/lib/utils";
 
 const TABS: { key: string; label: string; render: () => React.ReactNode }[] = [
@@ -11,6 +13,16 @@ const TABS: { key: string; label: string; render: () => React.ReactNode }[] = [
   { key: "announcement", label: "Announcement bar", render: () => <AnnouncementEditor /> },
   { key: "registration", label: "Registration", render: () => <RegistrationEditor /> },
   { key: "faq", label: "FAQ", render: () => <FaqEditor /> },
+  { key: "team", label: "Core team", render: () => <TeamEditor /> },
+  { key: "ambassadors", label: "Ambassadors", render: () => <AmbassadorsEditor /> },
+  { key: "members", label: "Members", render: () => <MembersEditor /> },
+  { key: "previous", label: "Previous members", render: () => <PreviousMembersEditor /> },
+  { key: "faculty", label: "Faculty", render: () => <FacultyEditor /> },
+  { key: "legacy", label: "Timeline", render: () => <LegacyEditor /> },
+  { key: "testimonials", label: "Testimonials", render: () => <TestimonialsEditor /> },
+  { key: "partners", label: "Partners", render: () => <PartnersEditor /> },
+  { key: "projects", label: "Projects", render: () => <ProjectsEditor /> },
+  { key: "resources", label: "Resources", render: () => <ResourcesEditor /> },
 ];
 
 function Hub() {

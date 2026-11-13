@@ -1,13 +1,14 @@
 "use client";
 
 import { useId } from "react";
-import { assetUrl } from "@/lib/utils";
+import { assetUrl, isEmail } from "@/lib/utils";
 
 export type Obj = Record<string, unknown>;
 export type FieldErrors = Record<string, string>;
-export type FieldType = "text" | "textarea" | "url" | "image" | "date" | "select" | "boolean";
+export type FieldType = "text" | "textarea" | "url" | "image" | "date" | "select" | "boolean" | "email" | "lines" | "heading";
 
 export interface FieldDef {
+  /** may be a path like "profile.campus" for nested values */
   key: string;
   label: string;
   type?: FieldType;
@@ -15,10 +16,31 @@ export interface FieldDef {
   help?: string;
   placeholder?: string;
   options?: { value: string; label: string }[];
+  /** select only: store the choice as a number (e.g. a 1-5 rating) */
+  numeric?: boolean;
   rows?: number;
   maxLength?: number;
   /** two fields side by side on bigger screens */
   half?: boolean;
+}
+
+/* ---------- nested values ("profile.campus") ---------- */
+
+export function getPath(o: Obj, path: string): unknown {
+  let cur: unknown = o;
+  for (const k of path.split(".")) {
+    if (cur && typeof cur === "object") cur = (cur as Obj)[k];
+    else return undefined;
+  }
+  return cur;
+}
+
+export function setPath(o: Obj, path: string, v: unknown): Obj {
+  const [head, ...rest] = path.split(".");
+  if (!rest.length) return { ...o, [head]: v };
+  const cur = o[head];
+  const child: Obj = cur && typeof cur === "object" && !Array.isArray(cur) ? (cur as Obj) : {};
+  return { ...o, [head]: setPath(child, rest.join("."), v) };
 }
 
 /* ---------- validation ---------- */
@@ -38,25 +60,29 @@ export function checkImage(v: string): string | null {
   return "Use a full https:// link, or a path like assets/events/photo.webp";
 }
 
+export function checkEmail(v: string): string | null {
+  const s = v.trim();
+  if (!s) return null;
+  return isEmail(s) || /^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(s) ? null : "Enter a valid email address";
+}
+
 export function validateFields(defs: FieldDef[], value: Obj): FieldErrors {
   const errors: FieldErrors = {};
   for (const d of defs) {
-    const raw = value[d.key];
+    if (d.type === "heading") continue;
+    const raw = getPath(value, d.key);
     const v = typeof raw === "string" ? raw.trim() : raw;
     if (d.required && (v === undefined || v === null || v === "")) {
       errors[d.key] = "Required";
       continue;
     }
     if (typeof v !== "string" || !v) continue;
-    if (d.type === "url") {
-      const e = checkLink(v);
-      if (e) errors[d.key] = e;
-    }
-    if (d.type === "image") {
-      const e = checkImage(v);
-      if (e) errors[d.key] = e;
-    }
-    if (d.maxLength && v.length > d.maxLength) errors[d.key] = `Maximum ${d.maxLength} characters`;
+    let e: string | null = null;
+    if (d.type === "url") e = checkLink(v);
+    if (d.type === "image") e = checkImage(v);
+    if (d.type === "email") e = checkEmail(v);
+    if (!e && d.maxLength && v.length > d.maxLength) e = `Maximum ${d.maxLength} characters`;
+    if (e) errors[d.key] = e;
   }
   return errors;
 }
@@ -82,6 +108,11 @@ export function trimObject(o: Obj): Obj {
   return out;
 }
 
+/** "one per line" list -> trimmed non-empty strings */
+export function cleanLines(v: unknown): string[] {
+  return Array.isArray(v) ? v.map((x) => String(x).trim()).filter(Boolean) : [];
+}
+
 /* ---------- rendering ---------- */
 
 interface Props {
@@ -93,16 +124,26 @@ interface Props {
 
 export function FormFields({ defs, value, onChange, errors = {} }: Props) {
   const base = useId();
-  const set = (key: string, v: unknown) => onChange({ ...value, [key]: v });
+  const set = (key: string, v: unknown) => onChange(setPath(value, key, v));
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {defs.map((d) => {
-        const id = `${base}-${d.key}`;
-        const raw = value[d.key];
-        const str = typeof raw === "string" ? raw : raw == null ? "" : String(raw);
-        const err = errors[d.key];
         const type = d.type ?? "text";
+
+        if (type === "heading") {
+          return (
+            <div key={d.key} className="mt-2 border-t border-[var(--border)] pt-4 sm:col-span-2">
+              <h4 className="font-display text-base font-bold">{d.label}</h4>
+              {d.help ? <p className="mt-1 text-xs text-muted">{d.help}</p> : null}
+            </div>
+          );
+        }
+
+        const id = `${base}-${d.key}`;
+        const raw = getPath(value, d.key);
+        const str = Array.isArray(raw) ? raw.join("\n") : typeof raw === "string" ? raw : raw == null ? "" : String(raw);
+        const err = errors[d.key];
 
         return (
           <div key={d.key} className={d.half ? "" : "sm:col-span-2"}>
@@ -116,10 +157,25 @@ export function FormFields({ defs, value, onChange, errors = {} }: Props) {
                 <label htmlFor={id} className="label">
                   {d.label} {d.required ? <span className="text-accent">*</span> : null}
                 </label>
-                {type === "textarea" ? (
-                  <textarea id={id} rows={d.rows ?? 3} maxLength={d.maxLength ? d.maxLength + 200 : undefined} value={str} onChange={(e) => set(d.key, e.target.value)} placeholder={d.placeholder} className="field resize-y" aria-invalid={!!err} />
+                {type === "textarea" || type === "lines" ? (
+                  <textarea
+                    id={id}
+                    rows={d.rows ?? (type === "lines" ? 4 : 3)}
+                    maxLength={d.maxLength ? d.maxLength + 200 : undefined}
+                    value={str}
+                    onChange={(e) => set(d.key, type === "lines" ? e.target.value.split("\n") : e.target.value)}
+                    placeholder={d.placeholder}
+                    className="field resize-y"
+                    aria-invalid={!!err}
+                  />
                 ) : type === "select" ? (
-                  <select id={id} value={str} onChange={(e) => set(d.key, e.target.value)} className="field" aria-invalid={!!err}>
+                  <select
+                    id={id}
+                    value={str}
+                    onChange={(e) => set(d.key, d.numeric && e.target.value !== "" ? Number(e.target.value) : e.target.value)}
+                    className="field"
+                    aria-invalid={!!err}
+                  >
                     {(d.options ?? []).map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
@@ -128,7 +184,7 @@ export function FormFields({ defs, value, onChange, errors = {} }: Props) {
                   <input
                     id={id}
                     type={type === "date" ? "date" : "text"}
-                    inputMode={type === "url" || type === "image" ? "url" : undefined}
+                    inputMode={type === "url" || type === "image" ? "url" : type === "email" ? "email" : undefined}
                     autoCapitalize="off"
                     value={str}
                     onChange={(e) => set(d.key, e.target.value)}
