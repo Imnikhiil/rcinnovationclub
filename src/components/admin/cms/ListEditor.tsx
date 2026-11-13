@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Copy, Plus, Trash2 } from "lucide-react";
-import { FormFields, type FieldDef, type FieldErrors, type Obj } from "./fields";
+import { assetUrl } from "@/lib/utils";
+import { FormFields, checkImage, type FieldDef, type FieldErrors, type Obj } from "./fields";
 
 interface Props {
   items: Obj[];
@@ -13,6 +14,8 @@ interface Props {
   newItem: () => Obj;
   title: (item: Obj) => string;
   subtitle?: (item: Obj) => React.ReactNode;
+  /** photo link for the small picture in the list (optional) */
+  thumb?: (item: Obj) => string;
   /** errors per item index (shown after a failed save) */
   errors?: Record<number, FieldErrors>;
   /** extra buttons above the list (e.g. "Sort by date") */
@@ -20,7 +23,7 @@ interface Props {
 }
 
 /** Add / edit / reorder / duplicate / delete a list of items. One item is open at a time. */
-export default function ListEditor({ items, onChange, defs, noun, newItem, title, subtitle, errors = {}, toolbar }: Props) {
+export default function ListEditor({ items, onChange, defs, noun, newItem, title, subtitle, thumb, errors = {}, toolbar }: Props) {
   const [open, setOpen] = useState<number | null>(null);
 
   const update = (i: number, next: Obj) => onChange(items.map((it, k) => (k === i ? next : it)));
@@ -66,7 +69,13 @@ export default function ListEditor({ items, onChange, defs, noun, newItem, title
         return (
           <div key={i} className="card overflow-hidden" style={hasErr ? { borderColor: "rgba(248,113,113,0.7)" } : undefined}>
             <button type="button" onClick={() => setOpen(isOpen ? null : i)} aria-expanded={isOpen} className="flex w-full items-center gap-3 p-3 text-left">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[var(--accent-soft)] text-xs font-bold text-accent">{i + 1}</span>
+              <span className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-[var(--accent-soft)] text-xs font-bold text-accent">
+                {i + 1}
+                {thumb && thumb(item) && !checkImage(thumb(item)) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={assetUrl(thumb(item).trim())} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+                ) : null}
+              </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{title(item) || `New ${noun}`}</span>
                 {subtitle ? <span className="block truncate text-xs text-muted">{subtitle(item)}</span> : null}

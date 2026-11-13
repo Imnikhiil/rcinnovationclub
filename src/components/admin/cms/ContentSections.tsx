@@ -48,7 +48,7 @@ const EVENT_DEFS: FieldDef[] = [
   { key: "date", label: "Date text on the card (optional)", placeholder: "5–6 December 2026", maxLength: 60, help: "Only if you want different wording than the date above." },
   { key: "venue", label: "Venue", maxLength: 120 },
   { key: "description", label: "Description", type: "textarea", rows: 4, maxLength: 1000 },
-  { key: "image", label: "Photo", type: "image", help: "A photo link (https://…) or a site path like assets/events/name.webp. Photo upload is coming in a later update." },
+  { key: "image", label: "Photo", type: "image", folder: "events", maxSide: 1600, help: "Upload a photo, or paste a link (https://…) or a site path like assets/events/name.webp." },
   { key: "registerUrl", label: "Register link", type: "url", half: true, placeholder: "https://forms.gle/…", help: "Leave empty for no Register button." },
   { key: "registerLabel", label: "Button text", half: true, placeholder: "Register Now", maxLength: 30 },
 ];
@@ -76,6 +76,7 @@ export function EventsEditor() {
           errors={errors}
           newItem={() => ({ title: "", tag: "", eventDate: "", time: "", venue: "", description: "", image: "", registerUrl: "", registerLabel: "Register Now" })}
           title={(e) => String(e.title ?? "")}
+          thumb={(e) => String(e.image ?? "")}
           subtitle={(e) => {
             const ev = e as unknown as EventItem;
             const up = isUpcomingEvent(ev);

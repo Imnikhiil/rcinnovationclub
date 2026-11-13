@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { assetUrl, isEmail } from "@/lib/utils";
+import ImageUpload from "./ImageUpload";
 
 export type Obj = Record<string, unknown>;
 export type FieldErrors = Record<string, string>;
@@ -22,6 +23,14 @@ export interface FieldDef {
   maxLength?: number;
   /** two fields side by side on bigger screens */
   half?: boolean;
+  /** image only: storage folder for uploads, e.g. "events" */
+  folder?: string;
+  /** image only: longest side in pixels after shrinking (default 1600) */
+  maxSide?: number;
+  /** text only: suggestions shown while typing */
+  suggestions?: string[];
+  /** show this field only when the function returns true (it is also skipped by validation) */
+  showIf?: (value: Obj) => boolean;
 }
 
 /* ---------- nested values ("profile.campus") ---------- */
@@ -70,6 +79,7 @@ export function validateFields(defs: FieldDef[], value: Obj): FieldErrors {
   const errors: FieldErrors = {};
   for (const d of defs) {
     if (d.type === "heading") continue;
+    if (d.showIf && !d.showIf(value)) continue;
     const raw = getPath(value, d.key);
     const v = typeof raw === "string" ? raw.trim() : raw;
     if (d.required && (v === undefined || v === null || v === "")) {
@@ -130,6 +140,7 @@ export function FormFields({ defs, value, onChange, errors = {} }: Props) {
     <div className="grid gap-4 sm:grid-cols-2">
       {defs.map((d) => {
         const type = d.type ?? "text";
+        if (d.showIf && !d.showIf(value)) return null;
 
         if (type === "heading") {
           return (
@@ -191,8 +202,21 @@ export function FormFields({ defs, value, onChange, errors = {} }: Props) {
                     placeholder={d.placeholder}
                     className="field"
                     aria-invalid={!!err}
+                    list={d.suggestions?.length ? `${id}-list` : undefined}
                   />
                 )}
+                {d.suggestions?.length ? (
+                  <datalist id={`${id}-list`}>
+                    {d.suggestions.map((s) => (
+                      <option key={s} value={s} />
+                    ))}
+                  </datalist>
+                ) : null}
+                {type === "image" ? (
+                  <div className="mt-2">
+                    <ImageUpload folder={d.folder ?? "uploads"} maxSide={d.maxSide} onUploaded={(url) => set(d.key, url)} />
+                  </div>
+                ) : null}
                 {type === "image" && str && !checkImage(str) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img key={str} src={assetUrl(str.trim())} alt="" className="mt-2 hidden h-24 max-w-full rounded-lg border border-[var(--border)] object-cover" onLoad={(e) => (e.currentTarget.style.display = "block")} onError={(e) => (e.currentTarget.style.display = "none")} />

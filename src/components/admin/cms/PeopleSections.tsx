@@ -3,7 +3,7 @@
 import ListSection from "./ListSection";
 import { cleanLines, cleanObject, type FieldDef, type Obj } from "./fields";
 
-const IMG_HELP = "A photo link (https://…) or a site path like assets/team/name.webp. Photo upload is coming in a later update.";
+const IMG_HELP = "Upload a photo, or paste a link (https://…) or a site path like assets/team/name.webp.";
 
 /* ============================================================================
    CORE TEAM  (with the optional profile popup)
@@ -12,7 +12,7 @@ const IMG_HELP = "A photo link (https://…) or a site path like assets/team/nam
 const TEAM_DEFS: FieldDef[] = [
   { key: "name", label: "Name", required: true, half: true, maxLength: 60 },
   { key: "role", label: "Role", required: true, half: true, placeholder: "e.g. Event Head", maxLength: 60 },
-  { key: "img", label: "Photo", type: "image", help: IMG_HELP },
+  { key: "img", label: "Photo", type: "image", folder: "team", maxSide: 800, help: IMG_HELP },
   {
     key: "accent",
     label: "Colour ring",
@@ -88,6 +88,7 @@ export function TeamEditor() {
       defs={TEAM_DEFS}
       newItem={() => ({ name: "", role: "", img: "", accent: "sky", lead: false, department: "" })}
       titleOf={(m) => String(m.name ?? "")}
+      thumbOf={(m) => String(m.img ?? "")}
       subtitleOf={(m) => {
         const dept = String(m.department ?? "");
         return `${m.role ?? ""}${m.lead ? " · Lead" : ""}${dept ? ` · ${dept}` : ""}${m.profile ? " · has profile" : ""}`;
@@ -105,7 +106,7 @@ const AMB_DEFS: FieldDef[] = [
   { key: "name", label: "Name", required: true, half: true, maxLength: 60 },
   { key: "label", label: "Title", half: true, placeholder: "Ambassador", maxLength: 40, help: "For example Ambassador or Previous Ambassador." },
   { key: "period", label: "Period", half: true, placeholder: "2025–26", maxLength: 40 },
-  { key: "image", label: "Photo", type: "image", help: IMG_HELP },
+  { key: "image", label: "Photo", type: "image", folder: "team", maxSide: 800, help: IMG_HELP },
   { key: "description", label: "About", type: "textarea", rows: 3, maxLength: 500 },
 ];
 
@@ -119,6 +120,7 @@ export function AmbassadorsEditor() {
       defs={AMB_DEFS}
       newItem={() => ({ name: "", label: "Ambassador", period: "", description: "", image: "" })}
       titleOf={(a) => String(a.name ?? "")}
+      thumbOf={(a) => String(a.image ?? "")}
       subtitleOf={(a) => `${a.label ?? ""}${a.period ? ` · ${a.period}` : ""}`}
     />
   );
@@ -174,7 +176,7 @@ const FACULTY_DEFS: FieldDef[] = [
   { key: "designation", label: "Designation", half: true, placeholder: "Assistant Professor", maxLength: 80 },
   { key: "role", label: "Role in the club", half: true, placeholder: "Faculty Coordinator", maxLength: 80 },
   { key: "period", label: "Period", half: true, placeholder: "2024–present", maxLength: 40 },
-  { key: "image", label: "Photo", type: "image", help: IMG_HELP },
+  { key: "image", label: "Photo", type: "image", folder: "team", maxSide: 800, help: IMG_HELP },
   { key: "description", label: "About", type: "textarea", rows: 3, maxLength: 500 },
 ];
 
@@ -189,6 +191,7 @@ export function FacultyEditor() {
       defs={FACULTY_DEFS}
       newItem={() => ({ name: "", designation: "", role: "", period: "", description: "", image: "" })}
       titleOf={(f) => String(f.name ?? "")}
+      thumbOf={(f) => String(f.image ?? "")}
       subtitleOf={(f) => String(f.designation ?? f.role ?? "")}
     />
   );
@@ -217,7 +220,7 @@ const TESTIMONIAL_DEFS: FieldDef[] = [
       { value: "1", label: "1 star" },
     ],
   },
-  { key: "image", label: "Photo", type: "image", help: IMG_HELP },
+  { key: "image", label: "Photo", type: "image", folder: "team", maxSide: 800, help: IMG_HELP },
 ];
 
 export function TestimonialsEditor() {
@@ -231,6 +234,7 @@ export function TestimonialsEditor() {
       defs={TESTIMONIAL_DEFS}
       newItem={() => ({ name: "", role: "", quote: "", rating: 5, image: "" })}
       titleOf={(t) => String(t.name ?? "")}
+      thumbOf={(t) => String(t.image ?? "")}
       subtitleOf={(t) => String(t.quote ?? "").slice(0, 70)}
     />
   );

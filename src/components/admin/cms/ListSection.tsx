@@ -32,6 +32,8 @@ interface Props {
   newItem: () => Obj;
   titleOf: (item: Obj) => string;
   subtitleOf?: (item: Obj) => React.ReactNode;
+  /** photo link shown as a small picture in the list */
+  thumbOf?: (item: Obj) => string;
   /** tidy one item before saving (default: trim text and drop empty values) */
   normalizeItem?: (item: Obj) => Obj;
 }
@@ -61,6 +63,7 @@ export default function ListSection(p: Props) {
           newItem={p.newItem}
           title={p.titleOf}
           subtitle={p.subtitleOf}
+          thumb={p.thumbOf}
         />
       )}
     </SectionEditor>

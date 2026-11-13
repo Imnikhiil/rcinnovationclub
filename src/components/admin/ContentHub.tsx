@@ -5,11 +5,13 @@ import { RefreshCw } from "lucide-react";
 import CmsProvider, { useCms } from "./cms/CmsProvider";
 import { AnnouncementEditor, EventsEditor, FaqEditor, RegistrationEditor } from "./cms/ContentSections";
 import { AmbassadorsEditor, FacultyEditor, MembersEditor, PreviousMembersEditor, TeamEditor, TestimonialsEditor } from "./cms/PeopleSections";
+import { GalleryEditor } from "./cms/GallerySection";
 import { LegacyEditor, PartnersEditor, ProjectsEditor, ResourcesEditor } from "./cms/ShowcaseSections";
 import { centerInRow, formatDate } from "@/lib/utils";
 
 const TABS: { key: string; label: string; render: () => React.ReactNode }[] = [
   { key: "events", label: "Events", render: () => <EventsEditor /> },
+  { key: "gallery", label: "Gallery", render: () => <GalleryEditor /> },
   { key: "announcement", label: "Announcement bar", render: () => <AnnouncementEditor /> },
   { key: "registration", label: "Registration", render: () => <RegistrationEditor /> },
   { key: "faq", label: "FAQ", render: () => <FaqEditor /> },

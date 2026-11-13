@@ -3,7 +3,7 @@
 import ListSection from "./ListSection";
 import type { FieldDef } from "./fields";
 
-const IMG_HELP = "A photo link (https://…) or a site path like assets/projects/name.webp. Photo upload is coming in a later update.";
+const IMG_HELP = "Upload a photo, or paste a link (https://…) or a site path like assets/projects/name.webp.";
 
 /* ============================================================================
    LEGACY TIMELINE
@@ -47,7 +47,7 @@ const PARTNER_DEFS: FieldDef[] = [
       { value: "collaborator", label: "Collaborator" },
     ],
   },
-  { key: "logo", label: "Logo", type: "image", help: "A logo link (https://…) or a site path like assets/partners/name.png. If empty, the name is shown instead." },
+  { key: "logo", label: "Logo", type: "image", folder: "partners", maxSide: 600, help: "Upload a logo, or paste a link (https://…). If empty, the name is shown instead." },
   { key: "url", label: "Website", type: "url", placeholder: "https://…" },
   { key: "description", label: "About", type: "textarea", rows: 3, maxLength: 300 },
 ];
@@ -63,6 +63,7 @@ export function PartnersEditor() {
       defs={PARTNER_DEFS}
       newItem={() => ({ name: "", type: "partner", logo: "", url: "", description: "" })}
       titleOf={(p) => String(p.name ?? "")}
+      thumbOf={(p) => String(p.logo ?? "")}
       subtitleOf={(p) => String(p.type ?? "")}
     />
   );
@@ -89,7 +90,7 @@ const PROJECT_DEFS: FieldDef[] = [
   { key: "description", label: "Description", type: "textarea", rows: 4, maxLength: 600 },
   { key: "tech", label: "Technologies", placeholder: "Python, Flask, HTML", maxLength: 150, help: "Separate with commas." },
   { key: "team", label: "Team", half: true, maxLength: 120 },
-  { key: "image", label: "Photo", type: "image", half: true, help: IMG_HELP },
+  { key: "image", label: "Photo", type: "image", folder: "projects", maxSide: 1400, half: true, help: IMG_HELP },
   { key: "githubUrl", label: "Code link", type: "url", half: true, placeholder: "https://github.com/…" },
   { key: "demoUrl", label: "Live demo link", type: "url", half: true, placeholder: "https://…" },
 ];
@@ -104,6 +105,7 @@ export function ProjectsEditor() {
       defs={PROJECT_DEFS}
       newItem={() => ({ title: "", category: "", status: "in-progress", description: "", tech: "", team: "", image: "", githubUrl: "", demoUrl: "" })}
       titleOf={(p) => String(p.title ?? "")}
+      thumbOf={(p) => String(p.image ?? "")}
       subtitleOf={(p) => `${p.status ?? ""}${p.category ? ` · ${p.category}` : ""}`}
     />
   );
