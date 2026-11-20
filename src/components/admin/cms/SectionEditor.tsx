@@ -49,6 +49,13 @@ export default function SectionEditor<T, E>({ sectionKey, title, intro, viewHref
   const check = validate(draft);
   const customised = sectionKey in cms.data;
 
+  // tell the hub, so switching to another tab can ask first
+  const { setDirty } = cms;
+  useEffect(() => {
+    setDirty(dirty);
+    return () => setDirty(false);
+  }, [dirty, setDirty]);
+
   // warn before closing the tab with unsaved work
   useEffect(() => {
     if (!dirty) return;

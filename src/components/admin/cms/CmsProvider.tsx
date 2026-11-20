@@ -26,6 +26,9 @@ interface Cms {
   /** forget the saved version of one section so the built-in default is used again */
   reset: (key: string) => Promise<SaveOutcome>;
   reload: () => Promise<void>;
+  /** editors report whether they hold unsaved changes; the hub asks before switching away */
+  setDirty: (v: boolean) => void;
+  isDirty: () => boolean;
 }
 
 const Ctx = createContext<Cms | null>(null);
@@ -44,6 +47,9 @@ export default function CmsProvider({ children }: { children: React.ReactNode })
   const [saving, setSaving] = useState(false);
   const rowRef = useRef<CmsRow | null>(null);
   const busy = useRef(false);
+  const dirty = useRef(false);
+  const setDirty = useCallback((v: boolean) => void (dirty.current = v), []);
+  const isDirty = useCallback(() => dirty.current, []);
 
   const reload = useCallback(async () => {
     setStatus("loading");
@@ -105,8 +111,10 @@ export default function CmsProvider({ children }: { children: React.ReactNode })
       save,
       reset,
       reload,
+      setDirty,
+      isDirty,
     }),
-    [status, error, data, row?.updated_at, row?.updated_by, saving, save, reset, reload],
+    [status, error, data, row?.updated_at, row?.updated_by, saving, save, reset, reload, setDirty, isDirty],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

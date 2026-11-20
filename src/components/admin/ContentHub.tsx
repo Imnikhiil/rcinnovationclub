@@ -6,6 +6,7 @@ import CmsProvider, { useCms } from "./cms/CmsProvider";
 import { AnnouncementEditor, EventsEditor, FaqEditor, RegistrationEditor } from "./cms/ContentSections";
 import { AmbassadorsEditor, FacultyEditor, MembersEditor, PreviousMembersEditor, TeamEditor, TestimonialsEditor } from "./cms/PeopleSections";
 import { GalleryEditor } from "./cms/GallerySection";
+import { StatsEditor, TextsHub } from "./cms/TextSections";
 import { LegacyEditor, PartnersEditor, ProjectsEditor, ResourcesEditor } from "./cms/ShowcaseSections";
 import { centerInRow, formatDate } from "@/lib/utils";
 
@@ -25,6 +26,8 @@ const TABS: { key: string; label: string; render: () => React.ReactNode }[] = [
   { key: "partners", label: "Partners", render: () => <PartnersEditor /> },
   { key: "projects", label: "Projects", render: () => <ProjectsEditor /> },
   { key: "resources", label: "Resources", render: () => <ResourcesEditor /> },
+  { key: "numbers", label: "Numbers", render: () => <StatsEditor /> },
+  { key: "texts", label: "Page texts & settings", render: () => <TextsHub /> },
 ];
 
 function Hub() {
@@ -37,6 +40,7 @@ function Hub() {
   }, []);
 
   function pick(key: string, el: HTMLElement) {
+    if (key !== tab && cms.isDirty() && !window.confirm("You have unsaved changes. Leave without saving?")) return;
     setTab(key);
     history.replaceState(null, "", `#${key}`);
     centerInRow(el);

@@ -6,7 +6,7 @@ import ImageUpload from "./ImageUpload";
 
 export type Obj = Record<string, unknown>;
 export type FieldErrors = Record<string, string>;
-export type FieldType = "text" | "textarea" | "url" | "image" | "date" | "select" | "boolean" | "email" | "lines" | "heading";
+export type FieldType = "text" | "textarea" | "url" | "image" | "date" | "select" | "boolean" | "email" | "lines" | "heading" | "number";
 
 export interface FieldDef {
   /** may be a path like "profile.campus" for nested values */
@@ -29,6 +29,9 @@ export interface FieldDef {
   maxSide?: number;
   /** text only: suggestions shown while typing */
   suggestions?: string[];
+  /** text only: the value (when not empty) must match this, otherwise patternMessage is shown */
+  pattern?: RegExp;
+  patternMessage?: string;
   /** show this field only when the function returns true (it is also skipped by validation) */
   showIf?: (value: Obj) => boolean;
 }
@@ -86,12 +89,17 @@ export function validateFields(defs: FieldDef[], value: Obj): FieldErrors {
       errors[d.key] = "Required";
       continue;
     }
+    if (d.type === "number") {
+      if (typeof v === "number" && (!Number.isFinite(v) || v < 0 || v > 1_000_000_000)) errors[d.key] = "Enter a whole number from 0 to 1,000,000,000";
+      continue;
+    }
     if (typeof v !== "string" || !v) continue;
     let e: string | null = null;
     if (d.type === "url") e = checkLink(v);
     if (d.type === "image") e = checkImage(v);
     if (d.type === "email") e = checkEmail(v);
     if (!e && d.maxLength && v.length > d.maxLength) e = `Maximum ${d.maxLength} characters`;
+    if (!e && d.pattern && !d.pattern.test(v)) e = d.patternMessage || "This value is not in the right format";
     if (e) errors[d.key] = e;
   }
   return errors;
@@ -195,10 +203,15 @@ export function FormFields({ defs, value, onChange, errors = {} }: Props) {
                   <input
                     id={id}
                     type={type === "date" ? "date" : "text"}
-                    inputMode={type === "url" || type === "image" ? "url" : type === "email" ? "email" : undefined}
+                    inputMode={type === "url" || type === "image" ? "url" : type === "email" ? "email" : type === "number" ? "numeric" : undefined}
                     autoCapitalize="off"
                     value={str}
-                    onChange={(e) => set(d.key, e.target.value)}
+                    onChange={(e) => {
+                      if (type === "number") {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                        set(d.key, digits === "" ? "" : Number(digits));
+                      } else set(d.key, e.target.value);
+                    }}
                     placeholder={d.placeholder}
                     className="field"
                     aria-invalid={!!err}
