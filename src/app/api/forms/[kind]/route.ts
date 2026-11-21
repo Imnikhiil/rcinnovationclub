@@ -143,7 +143,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ kind: string }
   if (k === "contact") {
     const v = validateContact(body);
     if (!v.ok) return reply(400, { ok: false, code: "invalid", message: v.message });
-    result = await insert("contact_messages", { id: rid("msg"), ...v.value, status: "unread" });
+    result = await insert("contact_messages", { id: rid("msg"), ...v.value, status: "unread", submitted_at: new Date().toISOString() });
   } else if (k === "membership") {
     const closed = await joinClosedMessage();
     if (closed) return reply(403, { ok: false, code: "closed", message: closed });
@@ -163,11 +163,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ kind: string }
       interests: rest.interests,
       reason: rest.reason,
       status: "pending",
+      submitted_at: new Date().toISOString(),
     });
   } else {
     const v = validateNewsletter(body);
     if (!v.ok) return reply(400, { ok: false, code: "invalid", message: v.message });
-    result = await insert("subscribers", { id: rid("sub"), email: v.value.email });
+    result = await insert("subscribers", { id: rid("sub"), email: v.value.email, subscribed_at: new Date().toISOString() });
   }
 
   if (result.ok) return reply(200, { ok: true });
