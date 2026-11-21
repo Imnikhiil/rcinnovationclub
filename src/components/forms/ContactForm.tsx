@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
-import { sbInsert } from "@/lib/supabase";
+import { submitForm } from "@/lib/forms-client";
+import { useSpamGuard } from "./useSpamGuard";
+import { CONTACT_SUBJECTS, LIMITS } from "@/lib/form-rules";
 import { fillTemplate, sendNotification } from "@/lib/notify";
-import { isEmail, uid } from "@/lib/utils";
+import { isEmail } from "@/lib/utils";
 import type { NotifyConfig } from "@/lib/types";
 
-const SUBJECTS = ["General Inquiry", "Collaboration", "Sponsorship", "Event Query", "Feedback", "Other"];
 
 interface Labels {
   nameLabel: string;
@@ -18,11 +19,19 @@ interface Labels {
   successMessage: string;
 }
 
+function messageFor(code: string, fallback: string, duplicate?: string) {
+  if (code === "duplicate" && duplicate) return duplicate;
+  if (code === "rate_limited") return "Too many submissions right now. Please try again in a few minutes.";
+  if (code === "captcha") return "Verification failed. Please refresh the page and try again.";
+  return fallback;
+}
+
 export default function ContactForm({ labels, notify }: { labels: Labels; notify: NotifyConfig }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
   const msgRef = useRef<HTMLParagraphElement>(null);
+  const spam = useSpamGuard();
 
   useEffect(() => {
     if (error || done) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -43,19 +52,14 @@ export default function ContactForm({ labels, notify }: { labels: Labels; notify
     if (!isEmail(email)) return setError("Please enter a valid email address.");
     if (message.length < 10) return setError("Message must be at least 10 characters.");
 
-    setBusy(true);
-    const res = await sbInsert("contact_messages", {
-      id: uid("msg"),
-      name,
-      email,
-      subject,
-      message,
-      status: "unread",
-      submitted_at: new Date().toISOString(),
-    });
-    setBusy(false);
+    if (spam.needsToken && !spam.hasToken) return setError("Please complete the verification check below the form first.");
 
-    if (!res.ok) return setError("Could not send message. Please try again later.");
+    setBusy(true);
+    const res = await submitForm("contact", { name, email, subject, message }, spam.extras());
+    setBusy(false);
+    spam.reset();
+
+    if (!res.ok) return setError(res.code === "invalid" ? res.message : messageFor(res.code, res.message));
 
     form.reset();
     setDone(labels.successMessage);
@@ -75,26 +79,27 @@ export default function ContactForm({ labels, notify }: { labels: Labels; notify
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="contact-name" className="label">{labels.nameLabel} <span className="text-accent">*</span></label>
-          <input id="contact-name" name="name" required autoComplete="name" placeholder="Your name" className="field" />
+          <input id="contact-name" name="name" required maxLength={LIMITS.name} autoComplete="name" placeholder="Your name" className="field" />
         </div>
         <div>
           <label htmlFor="contact-email" className="label">{labels.emailLabel} <span className="text-accent">*</span></label>
-          <input id="contact-email" name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="field" />
+          <input id="contact-email" name="email" type="email" required maxLength={LIMITS.email} autoComplete="email" placeholder="you@example.com" className="field" />
         </div>
       </div>
       <div>
         <label htmlFor="contact-subject" className="label">{labels.subjectLabel} <span className="text-accent">*</span></label>
         <select id="contact-subject" name="subject" required defaultValue="" className="field">
           <option value="" disabled>Select a subject</option>
-          {SUBJECTS.map((s) => (
+          {CONTACT_SUBJECTS.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </div>
       <div>
         <label htmlFor="contact-message" className="label">{labels.messageLabel} <span className="text-accent">*</span></label>
-        <textarea id="contact-message" name="message" rows={5} required placeholder="How can we help you?" className="field resize-y" />
+        <textarea id="contact-message" name="message" rows={5} required maxLength={LIMITS.message} placeholder="How can we help you?" className="field resize-y" />
       </div>
+      {spam.guard}
       {error ? <p ref={msgRef} role="alert" className="msg-error">{error}</p> : null}
       {done ? <p ref={msgRef} role="status" className="msg-success">{done}</p> : null}
       <button type="submit" disabled={busy} className="btn btn-primary w-full disabled:opacity-60 sm:w-auto">

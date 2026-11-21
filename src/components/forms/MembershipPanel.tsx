@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Lock, Send, UserPlus, X } from "lucide-react";
-import { sbInsert } from "@/lib/supabase";
+import { submitForm } from "@/lib/forms-client";
+import { useSpamGuard } from "./useSpamGuard";
+import { LIMITS } from "@/lib/form-rules";
 import { fillTemplate, sendNotification } from "@/lib/notify";
-import { isEmail, uid } from "@/lib/utils";
+import { isEmail } from "@/lib/utils";
 import type { NotifyConfig, RegistrationConfig } from "@/lib/types";
 
 type Status = "loading" | "open" | "upcoming" | "closed" | "disabled";
@@ -23,6 +25,13 @@ function prettyDate(d?: string) {
   return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 }
 
+function messageFor(code: string, fallback: string, duplicate?: string) {
+  if (code === "duplicate" && duplicate) return duplicate;
+  if (code === "rate_limited") return "Too many submissions right now. Please try again in a few minutes.";
+  if (code === "captcha") return "Verification failed. Please refresh the page and try again.";
+  return fallback;
+}
+
 export default function MembershipPanel({ registration, notify }: { registration: RegistrationConfig; notify: NotifyConfig }) {
   const [status, setStatus] = useState<Status>("loading");
   const [open, setOpen] = useState(false);
@@ -31,6 +40,7 @@ export default function MembershipPanel({ registration, notify }: { registration
   const [done, setDone] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
   const msgRef = useRef<HTMLParagraphElement>(null);
+  const spam = useSpamGuard();
 
   useEffect(() => {
     if (error || done) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -49,10 +59,8 @@ export default function MembershipPanel({ registration, notify }: { registration
 
     const enrollment = v("enrollmentNumber");
     const row = {
-      id: uid("app"),
       name: v("name"),
       enrollment_number: enrollment,
-      enrollment_number_lower: enrollment.toLowerCase(),
       course: v("course"),
       semester: v("semester"),
       email: v("email"),
@@ -60,22 +68,24 @@ export default function MembershipPanel({ registration, notify }: { registration
       skills: v("skills"),
       interests: v("interests"),
       reason: v("reason"),
-      status: "pending",
-      submitted_at: new Date().toISOString(),
     };
 
     if (!row.name || !row.enrollment_number || !row.course || !row.semester || !row.email || !row.phone || !row.reason) {
       return setError("Please fill in all required fields.");
     }
     if (!isEmail(row.email)) return setError("Please enter a valid email address.");
+    if (spam.needsToken && !spam.hasToken) return setError("Please complete the verification check below the form first.");
 
     setBusy(true);
-    const res = await sbInsert("applications", row);
+    const res = await submitForm("membership", { ...row, enrollmentNumber: row.enrollment_number }, spam.extras());
     setBusy(false);
+    spam.reset();
 
     if (!res.ok) {
-      // unique index on enrollment_number_lower = this enrollment already applied
-      return setError(res.duplicate ? "An application with this enrollment number already exists." : "Could not submit application. Please try again later.");
+      // the database allows one application per enrollment number
+      if (res.code === "duplicate") return setError("An application with this enrollment number already exists.");
+      if (res.code === "invalid" || res.code === "closed") return setError(res.message);
+      return setError(messageFor(res.code, res.message));
     }
 
     form.reset();
@@ -134,19 +144,20 @@ export default function MembershipPanel({ registration, notify }: { registration
 
           <form onSubmit={onSubmit} noValidate className="mt-5 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id="mem-name" name="name" label="Full Name" placeholder="Your full name" autoComplete="name" required />
-              <Field id="mem-enrollment" name="enrollmentNumber" label="Enrollment Number" placeholder="e.g. 24CS001" required />
-              <Field id="mem-course" name="course" label="Course" placeholder="e.g. B.Tech CSE" required />
-              <Field id="mem-semester" name="semester" label="Semester" placeholder="e.g. 4th Semester" required />
-              <Field id="mem-email" name="email" type="email" label="Email" placeholder="you@example.com" autoComplete="email" required />
-              <Field id="mem-phone" name="phone" type="tel" label="Phone Number" placeholder="10-digit mobile number" autoComplete="tel" required />
+              <Field id="mem-name" name="name" label="Full Name" placeholder="Your full name" autoComplete="name" maxLength={LIMITS.name} required />
+              <Field id="mem-enrollment" name="enrollmentNumber" label="Enrollment Number" placeholder="e.g. 24CS001" maxLength={LIMITS.enrollment} required />
+              <Field id="mem-course" name="course" label="Course" placeholder="e.g. B.Tech CSE" maxLength={LIMITS.course} required />
+              <Field id="mem-semester" name="semester" label="Semester" placeholder="e.g. 4th Semester" maxLength={LIMITS.semester} required />
+              <Field id="mem-email" name="email" type="email" label="Email" placeholder="you@example.com" autoComplete="email" maxLength={LIMITS.email} required />
+              <Field id="mem-phone" name="phone" type="tel" label="Phone Number" placeholder="10-digit mobile number" autoComplete="tel" maxLength={LIMITS.phone} required />
             </div>
-            <Field id="mem-skills" name="skills" label="Skills" placeholder="e.g. Python, Web Development, Robotics" />
-            <Field id="mem-interests" name="interests" label="Interests" placeholder="e.g. AI, Hackathons, Design" />
+            <Field id="mem-skills" name="skills" label="Skills" placeholder="e.g. Python, Web Development, Robotics" maxLength={LIMITS.skills} />
+            <Field id="mem-interests" name="interests" label="Interests" placeholder="e.g. AI, Hackathons, Design" maxLength={LIMITS.interests} />
             <div>
               <label htmlFor="mem-reason" className="label">Reason for Joining <span className="text-accent">*</span></label>
-              <textarea id="mem-reason" name="reason" rows={3} required placeholder="Why do you want to join RC Innovation Club?" className="field resize-y" />
+              <textarea id="mem-reason" name="reason" rows={3} required maxLength={LIMITS.reason} placeholder="Why do you want to join RC Innovation Club?" className="field resize-y" />
             </div>
+            {spam.guard}
             {error ? <p ref={msgRef} role="alert" className="msg-error">{error}</p> : null}
             {done ? <p ref={msgRef} role="status" className="msg-success">{done}</p> : null}
             <button type="submit" disabled={busy} className="btn btn-primary w-full disabled:opacity-60 sm:w-auto">
@@ -159,13 +170,13 @@ export default function MembershipPanel({ registration, notify }: { registration
   );
 }
 
-function Field({ id, name, label, placeholder, type = "text", autoComplete, required }: {
-  id: string; name: string; label: string; placeholder?: string; type?: string; autoComplete?: string; required?: boolean;
+function Field({ id, name, label, placeholder, type = "text", autoComplete, required, maxLength }: {
+  id: string; name: string; label: string; placeholder?: string; type?: string; autoComplete?: string; required?: boolean; maxLength?: number;
 }) {
   return (
     <div>
       <label htmlFor={id} className="label">{label} {required ? <span className="text-accent">*</span> : null}</label>
-      <input id={id} name={name} type={type} required={required} autoComplete={autoComplete} placeholder={placeholder} className="field" />
+      <input id={id} name={name} type={type} required={required} autoComplete={autoComplete} maxLength={maxLength} placeholder={placeholder} className="field" />
     </div>
   );
 }
